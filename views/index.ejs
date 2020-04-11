@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css"
+        integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <script src='https://www.google.com/recaptcha/api.js' async defer></script>
+     <!-- 중국 -->
+    <script src="https://www.recaptcha.net/recaptcha/api.js" async defer></script>
+    <title>Captcha</title>
+</head>
+
+<body>
+    <div class="col-md-4 col-md-offset-4">
+        <h1>Captcha</h1>
+        <form id="form">
+            <div class="form-group">
+                <label for="email">email</label>
+                <input type="text" email="email" id="email" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="password">password</label>
+                <input type="password" email="password" id="password" class="form-control">
+            </div>
+            <div class="form-group">
+                <div class="g-recaptcha" data-sitekey="<%= process.env.DATA_SITE_KEY %>"></div>
+                <!-- reCAPCHA 서비스를 호출하는데 사용 -->
+            </div>
+            <input type="submit" value="Submit" class="btn btn-primary">
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('form').addEventListener('submit', submitForm);
+        function submitForm(e) {
+            e.preventDefault();
+
+            const email = document.querySelector('#email').value;
+            const password = document.querySelector('#password').value;
+            const captcha = document.querySelector('#g-recaptcha-response').value;
+            //리캡차를 통해 받은 응답토큰 (2분 유효)       
+            fetch('/captcha', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json, text/plain, */*',
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify({ email: email, password: password, captcha: captcha })
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    console.log(data);
+                    alert(data.msg);
+                    if (!!data.success) {
+                        fetch('/home')
+                            .then(res => res.text())
+                            .then(result => {
+                                console.log(result);
+                                location.href="home";
+                            })
+                            .catch(error => console.error(error))
+                    };
+                });
+        }
+    </script>
+</body>
+
+</html>
